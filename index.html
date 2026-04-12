@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>多学期成绩单合并工具 | 标准抬头·拼音姓名·双日期格式</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #eef2f7;
+            font-family: 'Segoe UI', Roboto, 'Noto Sans', system-ui, 'Microsoft YaHei', sans-serif;
+            padding: 24px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            padding: 22px 28px;
+            margin-bottom: 28px;
+            transition: 0.2s;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 6px 0;
+            color: #1e466e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sub {
+            color: #4a627a;
+            border-left: 4px solid #3b82f6;
+            padding-left: 14px;
+            margin: 8px 0 0 0;
+            font-size: 0.9rem;
+        }
+
+        .upload-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin: 24px 0 12px;
+        }
+
+        .semester-card {
+            background: #f9fbfe;
+            border-radius: 20px;
+            padding: 12px 16px;
+            flex: 1 1 170px;
+            border: 1px solid #e0e9f0;
+            transition: 0.1s;
+        }
+
+        .semester-card label {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: #0f3b5f;
+            font-size: 0.85rem;
+        }
+
+        .badge {
+            font-size: 0.65rem;
+            background: #e2edf7;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 6px;
+        }
+
+        input[type="file"] {
+            font-size: 0.75rem;
+            width: 100%;
+            padding: 5px 0;
+        }
+
+        .file-status {
+            font-size: 0.7rem;
+            color: #2c6e2c;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+
+        .file-status.error {
+            color: #c0392b;
+        }
+
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 20px 0 8px;
+            align-items: center;
+        }
+
+        button {
+            background: #1e466e;
+            border: none;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #0f3557;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #2c6288;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #1e466e;
+            border: 1.5px solid #1e466e;
+        }
+
+        .btn-outline:hover {
+            background: #ecf5fc;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .info-bar {
+            background: #eef2fa;
+            border-radius: 28px;
+            padding: 10px 18px;
+            margin: 15px 0 5px;
+            font-size: 0.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .student-info-panel {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 16px 20px;
+            margin: 20px 0 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: flex-end;
+            border: 1px solid #e2edf2;
+        }
+
+        .info-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+        .info-field label {
+            font-weight: 600;
+            color: #2c3e66;
+        }
+        .info-field input, .info-field select {
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            min-width: 130px;
+        }
+
+        .preview-area {
+            overflow-x: auto;
+            margin-top: 18px;
+            border-radius: 20px;
+            background: #fff;
+            padding: 4px;
+        }
+
+        /* 成绩单完整样式 */
+        .full-transcript {
+            font-family: 'Times New Roman', '宋体', SimSun, serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px 24px 32px;
+        }
+        .full-transcript h1 {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #0f172a;
+        }
+        .full-transcript .eng-title {
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 24px;
+            color: #2c3e66;
+        }
+        .certify-text {
+            margin: 20px 0 24px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #1e293b;
+        }
+        .transcript-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        .transcript-table th, .transcript-table td {
+            border: 1px solid #000000;
+            padding: 8px 6px;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .transcript-table th {
+            background-color: #eef3fc;
+            font-weight: 700;
+        }
+        .subject-name {
+            font-weight: 600;
+            text-align: left;
+        }
+        .note {
+            font-size: 10px;
+            text-align: center;
+            color: #475569;
+            margin: 12px 0;
+        }
+        .school-footer {
+            margin-top: 28px;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+            text-align: right;
+        }
+        .warning {
+            background: #ffefef;
+            color: #b91c1c;
+            padding: 8px 16px;
+            border-radius: 32px;
+        }
+        .success-msg {
+            background: #e1f7e8;
+            color: #1f6e43;
+            padding: 8px 16px;
+            border-radius: 32px;
+        }
+        .progress-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 48px;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            pointer-events: none;
+            font-weight: 500;
+        }
+        footer {
+            text-align: center;
+            font-size: 11px;
+            color: #6c7a89;
+            margin-top: 20px;
+        }
+        @media print {
+            .card:first-child, .action-bar, .student-info-panel, .info-bar, footer, button, .progress-toast { display: none; }
+            body { background: white; padding: 0; margin: 0; }
+            .full-transcript { padding: 0; }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>📚 多学期成绩单合并器 | 智能解析Excel · 标准抬头</h1>
+        <div class="sub">分别上传六个学期(九年级~十一年级)的班级成绩Excel → 自动合并同一学生所有科目 → 生成完整成绩单</div>
+        <div class="info-bar">
+            <span>✅ 合并规则：相同科目跨学期合并为一行</span>
+            <span>📌 智能识别成绩列：支持“科目+成绩”列，或第一列为科目、自动寻找数字分数列</span>
+            <span>🧑 姓名列自动识别（学生姓名/姓名/name等）</span>
+            <span>🔤 英文拼音名可手动填写，格式：名 姓 (首字母大写)</span>
+        </div>
+
+        <!-- 学期上传网格 6个学期 -->
+        <div class="upload-grid" id="semesterUploads"></div>
+
+        <!-- 全局操作 -->
+        <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin: 12px 0 8px;">
+            <button id="refreshAllBtn" class="btn-secondary">🔄 刷新合并预览</button>
+            <button id="resetAllBtn" class="btn-outline">🗑 清空所有学期数据</button>
+        </div>
+
+        <!-- 学生选择 + 详细信息 (含拼音名) -->
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin-top: 12px;">
+            <div style="min-width: 200px;">
+                <label>👤 选择学生：</label>
+                <select id="studentSelect" style="padding:8px 16px; border-radius:40px; min-width: 180px;" disabled></select>
+            </div>
+            <div class="student-info-panel" style="flex:2; margin:0;">
+                <div class="info-field"><label>中文名</label><input type="text" id="stuName" placeholder="学生姓名" readonly style="background:#f1f5f9;"></div>
+                <div class="info-field"><label>英文名/拼音</label><input type="text" id="stuPinyin" placeholder="例: An Xin" value="An Xin"></div>
+                <div class="info-field"><label>性别</label><select id="stuGender"><option>男</option><option>女</option></select></div>
+                <div class="info-field"><label>出生日期</label><input type="text" id="stuBirth" placeholder="MM-DD-YYYY 或 YYYY-MM-DD" value="05-20-2008"></div>
+                <div class="info-field"><label>身份证号</label><input type="text" id="stuId" placeholder="身份证号" value="410************001"></div>
+                <div class="info-field"><label>就读起止</label><input type="text" id="stuDuration" placeholder="09-2024 至 今  或 09-2022 至 07-2025" value="09-2022 至 07-2025"></div>
+                <button id="updateStudentInfoBtn" class="btn-outline" style="padding:6px 20px;">更新信息</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button id="exportWordBtn" class="btn-secondary">📄 导出当前学生成绩单(Word)</button>
+            <button id="batchExportZipBtn" class="btn-success">📦 批量导出所有学生(ZIP)</button>
+            <button id="printPreviewBtn">🖨️ 打印预览</button>
+        </div>
+        <div id="messageBox"></div>
+    </div>
+
+    <!-- 成绩单预览卡片（已移除标题） -->
+    <div class="card" id="previewCard">
+        <div id="previewContainer" class="preview-area"></div>
+    </div>
+    <footer>说明：支持上传.xlsx/.xls/.csv，智能解析成绩数据（科目列+成绩列，或第一列为科目自动寻找数字分数）。无成绩显示"—"。日期格式：中文年月日，英文月日年。</footer>
+</div>
+
+<script>
+    // ---------- 科目映射库 ----------
+    const subjectMap = {
+        "生物":"Biology","语文":"Chinese","英语":"English","数学":"Math","体育":"PE",
+        "物理":"Physics","化学":"Chemistry","地理":"Geography","政治":"Politics","音乐":"Music",
+        "美术":"Arts","计算机":"IT","法语":"French","语法":"Grammar","社会学":"Sociology",
+        "文学":"Literature","西班牙语":"Spanish","自习":"Self-study","历史":"History",
+        "经济":"Economics","统计":"Statistics","几何":"Geometry","代数":"Algebra",
+        "生物一册":"Biology 1","生物二册":"Biology 2","物理一册":"Physics 1","物理二册":"Physics 2",
+        "化学一册":"Chemistry 1","化学二册":"Chemistry 2","语文一册":"Chinese 1","语文二册":"Chinese 2",
+        "英语读写1级":"English Reading&Writing 1","英语读写2级":"English Reading&Writing 2",
+        "英语读写3级":"English Reading&Writing 3","英语读写4级":"English Reading&Writing 4",
+        "英语听说1级":"English Listening&Speaking 1","英语听说2级":"English Listening&Speaking 2",
+        "英语听说3级":"English Listening&Speaking 3","英语听说4级":"English Listening&Speaking 4",
+        "经济学":"Economic","雅思课程":"IELTS","雅思":"IELTS",
+        "AP微积分":"AP Calculus","AP 预备微积分":"AP Pre-calculus","AP预备微积分":"AP Pre-calculus",
+        "AP物理1":"AP Physical 1","AP物理2":"AP Physical 2","AP 美术":"AP Arts","AP美术":"AP Arts",
+        "AP生物":"AP Biology","AP心理学":"AP Psychology","AP化学":"AP Chemistry"
+    };
+    function getSubjectDisplay(subjectName) {
+        const english = subjectMap[subjectName] || subjectName;
+        return `${subjectName} / ${english}`;
+    }
+
+    // 学期配置
+    const SEMESTER_CONFIG = [
+        { gradeLabel: "九年级", semesterLabel: "第一学期", idx:0 },
+        { gradeLabel: "九年级", semesterLabel: "第二学期", idx:1 },
+        { gradeLabel: "十年级", semesterLabel: "第一学期", idx:2 },
+        { gradeLabel: "十年级", semesterLabel: "第二学期", idx:3 },
+        { gradeLabel: "十一年级", semesterLabel: "第一学期", idx:4 },
+        { gradeLabel: "十一年级", semesterLabel: "第二学期", idx:5 }
+    ];
+
+    // 全局存储
+    let semestersData = [null, null, null, null, null, null];
+    let mergedStudentMatrix = new Map();  // studentName -> { subject: [score0..5] }
+    let studentList = [];
+    let currentStudent = null;
+    let studentDetails = new Map(); // name -> { pinyin, gender, birth, idNo, startEnd }
+
+    // DOM 元素
+    const semesterUploadsDiv = document.getElementById('semesterUploads');
+    const studentSelect = document.getElementById('studentSelect');
+    const previewContainer = document.getElementById('previewContainer');
+    const messageBox = document.getElementById('messageBox');
+    const stuNameInput = document.getElementById('stuName');
+    const stuPinyinInput = document.getElementById('stuPinyin');
+    const stuGenderSelect = document.getElementById('stuGender');
+    const stuBirthInput = document.getElementById('stuBirth');
+    const stuIdInput = document.getElementById('stuId');
+    const stuDurationInput = document.getElementById('stuDuration');
+
+    // 辅助函数：从单元格中提取数字分数
+    function extractNumberScore(value) {
+        if (value === null || value === undefined || value === "") return null;
+        let str = value.toString().trim();
+        if (str === "") return null;
+        let num = parseFloat(str);
+        if (!isNaN(num) && isFinite(num)) {
+            if (num >= 0 && num <= 100) return num;
+            if (num > 100 && num <= 120) return num;
+        }
+        let match = str.match(/(\d+(?:\.\d+)?)/);
+        if (match) {
+            let extracted = parseFloat(match[1]);
+            if (!isNaN(extracted) && extracted >= 0 && extracted <= 120) return extracted;
+        }
+        return null;
+    }
+
+    // 解析班级成绩单Excel（多行学生，多列科目）
+    async function parseClassGradeSheet(file, nameColumnCustom) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const wb = XLSX.read(data, { type: "array" });
+                    const sheet = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+                    if (!rows || rows.length === 0) reject(new Error("表格无数据"));
+                    const columns = Object.keys(rows[0]);
+                    
+                    let nameCol = null;
+                    if (nameColumnCustom && nameColumnCustom.trim()) {
+                        nameCol = columns.find(c => c === nameColumnCustom.trim()) || 
+                                  columns.find(c => c.toLowerCase() === nameColumnCustom.trim().toLowerCase());
+                    }
+                    if (!nameCol) {
+                        const candidates = ["学生姓名", "姓名", "中文名", "name", "StudentName", "学生"];
+                        nameCol = columns.find(c => candidates.includes(c)) || 
+                                  columns.find(c => c.includes("姓名") || c.toLowerCase().includes("name"));
+                    }
+                    if (!nameCol) nameCol = columns[0];
+                    
+                    const gradeColumns = columns.filter(col => {
+                        const lower = col.toLowerCase();
+                        return (lower.includes("成绩") || lower.includes("分数") || lower.includes("得分")) &&
+                               !lower.includes("绩点") && !lower.includes("gpa") && !lower.includes("学分") &&
+                               !lower.includes("等级") && !lower.includes("评语");
+                    });
+                    
+                    const studentScoreMap = new Map();
+                    for (const row of rows) {
+                        let studentName = row[nameCol];
+                        if (!studentName || (typeof studentName === 'string' && !studentName.trim())) continue;
+                        studentName = String(studentName).trim();
+                        if (!studentScoreMap.has(studentName)) studentScoreMap.set(studentName, new Map());
+                        const subjMap = studentScoreMap.get(studentName);
+                        for (const col of gradeColumns) {
+                            let scoreVal = extractNumberScore(row[col]);
+                            if (scoreVal !== null) {
+                                let subject = col.replace(/成绩$|分数$|得分$/g, "").trim();
+                                if (subject) subjMap.set(subject, scoreVal);
+                            }
+                        }
+                    }
+                    for (let [name, map] of studentScoreMap.entries()) {
+                        if (map.size === 0) studentScoreMap.delete(name);
+                    }
+                    if (studentScoreMap.size === 0) reject(new Error("未找到有效成绩数据，请确保有包含“成绩/分数”的列且数值在0-100之间"));
+                    resolve({ studentScoresMap: studentScoreMap, nameColUsed: nameCol });
+                } catch(err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("文件读取失败"));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    // 将 MM-DD-YYYY 转为中文年月日，例如 "2009年5月4日"
+    function formatChineseBirthday(dateStr) {
+        let mmddyyyy = formatToMMDDYYYY(dateStr);
+        let parts = mmddyyyy.split('-');
+        let month = parseInt(parts[0], 10);
+        let day = parseInt(parts[1], 10);
+        let year = parts[2];
+        return `${year}年${month}月${day}日`;
+    }
+
+    // 将 MM-DD-YYYY 转为英文格式 "May. 4, 2009"
+    function formatEnglishBirthday(dateStr) {
+        let mmddyyyy = formatToMMDDYYYY(dateStr);
+        let parts = mmddyyyy.split('-');
+        let monthNum = parseInt(parts[0], 10);
+        let day = parseInt(parts[1], 10);
+        let year = parts[2];
+        const months = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "June", "July", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+        let monthAbbr = months[monthNum - 1];
+        return `${monthAbbr} ${day}, ${year}`;
+    }
+
+    // 通用日期格式化：转为 MM-DD-YYYY
+    function formatToMMDDYYYY(dateStr) {
+        if(!dateStr) return "01-01-2000";
+        let str = dateStr.trim();
+        if(/^\d{1,2}-\d{1,2}-\d{4}$/.test(str)) return str;
+        let parts = str.split(/[-/年月]/).filter(p=>p.trim());
+        if(parts.length===3) {
+            let y,m,d;
+            if(parts[0].length===4) { y=parts[0]; m=parts[1]; d=parts[2]; }
+            else if(parts[2].length===4) { y=parts[2]; m=parts[1]; d=parts[0]; }
+            else { y=parts[2]; m=parts[0]; d=parts[1]; }
+            if(y && m && d) return `${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}-${y}`;
+        }
+        return "01-01-2000";
+    }
+
+    // 解析起止字符串，支持 "至今" 或 "今"，返回 { startYearMonth, endYearMonth, isOngoing }
+    function parseStartEnd(durationStr) {
+        let defaultStart = "09-2022", defaultEnd = "07-2025";
+        let isOngoing = false;
+        if(!durationStr) return { start: defaultStart, end: defaultEnd, isOngoing: false };
+        let str = durationStr.trim();
+        let startPart = "", endPart = "";
+        if(str.includes('至')) {
+            let [s, e] = str.split('至');
+            startPart = s.trim();
+            endPart = e.trim();
+        } else {
+            startPart = str;
+            endPart = "";
+        }
+        // 判断是否为至今
+        if(endPart === "今" || endPart === "至今" || endPart === "now" || endPart === "") {
+            isOngoing = true;
+            endPart = "";
+        }
+        // 验证格式: MM-YYYY
+        let startValid = /^\d{1,2}-\d{4}$/.test(startPart);
+        let endValid = !endPart || /^\d{1,2}-\d{4}$/.test(endPart);
+        if (!startValid) startPart = defaultStart;
+        if (endPart && !endValid) endPart = defaultEnd;
+        if (!endPart && !isOngoing) endPart = defaultEnd;
+        return { start: startPart, end: endPart, isOngoing: isOngoing };
+    }
+
+    // 将 "MM-YYYY" 转为中文 "2024年9月"
+    function formatChineseYearMonth(monthYear) {
+        let parts = monthYear.split('-');
+        let month = parseInt(parts[0], 10);
+        let year = parts[1];
+        return `${year}年${month}月`;
+    }
+
+    // 将 "MM-YYYY" 转为英文 "Sep. 2024"
+    function formatEnglishYearMonth(monthYear) {
+        let parts = monthYear.split('-');
+        let monthNum = parseInt(parts[0], 10);
+        let year = parts[1];
+        const months = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "June", "July", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+        let monthAbbr = months[monthNum - 1];
+        return `${monthAbbr} ${year}`;
+    }
+
+    // 格式化英文签发日期 (用于落款)
+    function formatEnglishDate(date) {
+        const months = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "June", "July", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
+        const month = months[date.getMonth()];
+        const day = date.getDate();
+        const year = date.getFullYear();
+        return `${month} ${day}, ${year}`;
+    }
+
+    // 生成完整成绩单HTML（包含Word页面视图指令）
+    function generateFullTranscriptHTML(studentName) {
+        if(!studentName || !mergedStudentMatrix.has(studentName)) return `<div class="warning">无成绩数据</div>`;
+        const subjectScores = mergedStudentMatrix.get(studentName);
+        let subjects = Object.keys(subjectScores);
+        const order = ["语文","数学","英语","物理","化学","生物","历史","地理","政治","经济","经济学","AP微积分","AP物理1","AP生物","AP心理学","AP化学","美术","音乐","体育","计算机","法语","西班牙语","文学","社会学","雅思课程","英语读写1级","英语读写2级","英语读写3级","英语读写4级","英语听说1级","英语听说2级","英语听说3级","英语听说4级","生物一册","生物二册","语文一册","语文二册"];
+        subjects.sort((a,b) => {
+            let ia = order.indexOf(a); if(ia===-1) ia=999;
+            let ib = order.indexOf(b); if(ib===-1) ib=999;
+            if(ia!==ib) return ia-ib;
+            return a.localeCompare(b);
+        });
+        
+        let tableRows = '';
+        for(let sub of subjects) {
+            const scoresArr = subjectScores[sub];
+            const displaySub = getSubjectDisplay(sub);
+            tableRows += `<tr><td class="subject-name" style="border:1px solid #000; text-align:left; padding:8px;">${displaySub}</td>`;
+            for(let s=0;s<6;s++) {
+                let val = scoresArr[s];
+                let display = (val !== null && val !== undefined && val !== "") ? val : "—";
+                tableRows += `<td style="border:1px solid #000; text-align:center; padding:8px;">${display}<\/td>`;
+            }
+            tableRows += `<\/tr>`;
+        }
+        
+        const details = studentDetails.get(studentName) || {};
+        const chineseName = studentName;
+        const pinyinName = details.pinyin || (()=>{
+            let tmp = chineseName.replace(/[^\u4e00-\u9fa5]/g, '');
+            if(tmp.length>=2) return tmp[0]+" "+tmp.slice(1);
+            return chineseName;
+        })();
+        const gender = details.gender || "男";
+        const genderEn = gender === '男' ? 'male' : 'female';
+        
+        const rawBirth = details.birth || "05-20-2008";
+        const birthChinese = formatChineseBirthday(rawBirth);
+        const birthEnglish = formatEnglishBirthday(rawBirth);
+        
+        const idNo = details.idNo || "XXXXXXXXXXXXXXXXX";
+        let durationRaw = details.startEnd || "09-2022 至 07-2025";
+        const { start, end, isOngoing } = parseStartEnd(durationRaw);
+        const startChinese = formatChineseYearMonth(start);
+        const endChinese = isOngoing ? "至今" : formatChineseYearMonth(end);
+        const startEnglish = formatEnglishYearMonth(start);
+        const endEnglish = isOngoing ? "till now" : formatEnglishYearMonth(end);
+        
+        const certifyChinese = `兹证明: ${chineseName}，${gender}，出生日期 ${birthChinese}，身份证号: ${idNo}，自 ${startChinese} 至 ${endChinese} 在我校就读。其学习成绩如下：`;
+        const certifyEnglish = `This is to certify that ${pinyinName}, ${genderEn}, born on ${birthEnglish}, ID NO.: ${idNo}, has studied in our school since ${startEnglish} ${endEnglish}. The grades are as follows:`;
+        
+        const now = new Date();
+        const englishIssueDate = formatEnglishDate(now);
+        
+        const footerHtml = `
+        <div class="school-footer">
+            <div>
+                <div>北京市朝阳区北外同文外国语学校</div>
+                <div>Beijing Chaoyang Tongwen Foreign Language School</div>
+                <div>Issued: ${englishIssueDate}</div>
+            </div>
+        </div>`;
+        
+        // 添加Word页面视图指令（Print Layout）
+        const wordViewInstruction = `<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+ </w:WordDocument>
+</xml>
+<![endif]-->`;
+        
+        return `<!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8">${wordViewInstruction}<title>${chineseName}_成绩单</title>
+        <style>
+            body { font-family: 'Times New Roman', '宋体', SimSun, serif; margin: 1.5cm 1.8cm; background: white; }
+            .full-transcript { max-width: 1200px; margin: 0 auto; }
+            h1 { text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 6px; }
+            .eng-title { text-align: center; font-size: 16px; margin-bottom: 24px; }
+            .certify-text { margin: 20px 0 24px; font-size: 13px; line-height: 1.6; color: #1e293b; }
+            .transcript-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+            .transcript-table th, .transcript-table td { border: 1px solid #000000; padding: 8px 6px; vertical-align: middle; text-align: center; }
+            .transcript-table th { background-color: #eef3fc; font-weight: 700; }
+            .subject-name { font-weight: 600; text-align: left; }
+            .note { font-size: 10px; text-align: center; margin: 12px 0; }
+            .school-footer { margin-top: 28px; border-top: 1px dashed #cbd5e1; padding-top: 18px; display: flex; justify-content: flex-end; text-align: right; }
+        </style>
+        </head>
+        <body>
+        <div class="full-transcript">
+            <h1>学生成绩登记表</h1>
+            <div class="eng-title">Student Academic Report</div>
+            <div class="certify-text">${certifyChinese}<br>${certifyEnglish}</div>
+            <table class="transcript-table">
+                <thead><tr><th rowspan="2">科目 Subject</th><th colspan="2">九年级 Grade 9</th><th colspan="2">十年级 Grade 10</th><th colspan="2">十一年级 Grade 11</th></tr>
+                <tr><th>第一学期<br>1st semester</th><th>第二学期<br>2nd semester</th><th>第一学期<br>1st semester</th><th>第二学期<br>2nd semester</th><th>第一学期<br>1st semester</th><th>第二学期<br>2nd semester</th></tr></thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+            <div class="note">说明(Note)：满分百分制(Full Mark is 100.) ｜ 仅录入列名包含「成绩」的分数，绩点/学分等已自动过滤</div>
+            ${footerHtml}
+        </div>
+        </body>
+        </html>`;
+    }
+
+    // 合并所有学期数据
+    function mergeAllSemestersAndRefresh() {
+        mergedStudentMatrix.clear();
+        const tempMatrix = new Map();
+        for(let semIdx=0; semIdx<6; semIdx++) {
+            const semMap = semestersData[semIdx];
+            if(!semMap) continue;
+            for(let [studentName, subjectScoreMap] of semMap.entries()) {
+                if(!tempMatrix.has(studentName)) tempMatrix.set(studentName, new Map());
+                const studentSubjects = tempMatrix.get(studentName);
+                for(let [subject, score] of subjectScoreMap.entries()) {
+                    if(!studentSubjects.has(subject)) {
+                        const arr = Array(6).fill(null);
+                        studentSubjects.set(subject, arr);
+                    }
+                    const arr = studentSubjects.get(subject);
+                    arr[semIdx] = score;
+                }
+            }
+        }
+        for(let [stuName, subjectMap] of tempMatrix.entries()) {
+            const finalSubjectMap = {};
+            for(let [sub, arr] of subjectMap.entries()) {
+                finalSubjectMap[sub] = arr;
+            }
+            mergedStudentMatrix.set(stuName, finalSubjectMap);
+            if(!studentDetails.has(stuName)) {
+                studentDetails.set(stuName, { pinyin: "", gender: "男", birth: "05-20-2008", idNo: "XXXXXXXXXXXXXXXXX", startEnd: "09-2022 至 07-2025" });
+            }
+        }
+        studentList = Array.from(mergedStudentMatrix.keys()).sort();
+        updateStudentSelect();
+        if(studentList.length>0) {
+            if(!currentStudent || !studentList.includes(currentStudent)) currentStudent = studentList[0];
+            studentSelect.value = currentStudent;
+            syncStudentInfoToPanel(currentStudent);
+            renderPreviewForStudent(currentStudent);
+        } else {
+            previewContainer.innerHTML = '<div class="warning">暂无有效学生数据，请至少上传一个学期的有效成绩表。</div>';
+            studentSelect.innerHTML = '<option disabled>无学生数据</option>';
+            studentSelect.disabled = true;
+        }
+    }
+
+    function updateStudentSelect() {
+        studentSelect.innerHTML = '';
+        if(studentList.length === 0) {
+            studentSelect.disabled = true;
+            studentSelect.innerHTML = '<option>暂无学生</option>';
+            return;
+        }
+        studentSelect.disabled = false;
+        for(let name of studentList) {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            studentSelect.appendChild(opt);
+        }
+        if(currentStudent) studentSelect.value = currentStudent;
+    }
+
+    function syncStudentInfoToPanel(studentName) {
+        if(!studentName) return;
+        const details = studentDetails.get(studentName) || {};
+        stuNameInput.value = studentName;
+        stuPinyinInput.value = details.pinyin || (()=>{
+            let simple = studentName.replace(/[^\u4e00-\u9fa5]/g, '');
+            if(simple.length>=2) return simple[0]+" "+simple.slice(1);
+            return studentName;
+        })();
+        stuGenderSelect.value = details.gender || "男";
+        stuBirthInput.value = details.birth || "05-20-2008";
+        stuIdInput.value = details.idNo || "410************001";
+        stuDurationInput.value = details.startEnd || "09-2022 至 07-2025";
+    }
+
+    function saveCurrentStudentDetails() {
+        if(!currentStudent) return;
+        let cur = studentDetails.get(currentStudent) || {};
+        cur.pinyin = stuPinyinInput.value.trim();
+        cur.gender = stuGenderSelect.value;
+        cur.birth = stuBirthInput.value.trim();
+        cur.idNo = stuIdInput.value.trim();
+        cur.startEnd = stuDurationInput.value.trim();
+        studentDetails.set(currentStudent, cur);
+    }
+
+    function renderPreviewForStudent(studentName) {
+        if(!studentName || !mergedStudentMatrix.has(studentName)) {
+            previewContainer.innerHTML = '<div class="warning">请选择有效学生</div>';
+            return;
+        }
+        const htmlContent = generateFullTranscriptHTML(studentName);
+        const match = htmlContent.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        if(match) {
+            previewContainer.innerHTML = match[1];
+        } else {
+            previewContainer.innerHTML = htmlContent;
+        }
+    }
+
+    async function handleSemesterFileUpload(event) {
+        const file = event.target.files[0];
+        const semIdx = parseInt(event.target.getAttribute('data-semester'));
+        const statusDiv = document.getElementById(`fileStatus_${semIdx}`);
+        if(!file) {
+            semestersData[semIdx] = null;
+            statusDiv.innerText = "未上传";
+            mergeAllSemestersAndRefresh();
+            return;
+        }
+        statusDiv.innerText = "解析中...";
+        try {
+            const { studentScoresMap } = await parseClassGradeSheet(file, null);
+            semestersData[semIdx] = studentScoresMap;
+            statusDiv.innerText = `✓ ${studentScoresMap.size} 名学生`;
+            statusDiv.classList.remove('error');
+            mergeAllSemestersAndRefresh();
+            showMessage(`成功导入 ${SEMESTER_CONFIG[semIdx].gradeLabel} ${SEMESTER_CONFIG[semIdx].semesterLabel} (${studentScoresMap.size}人)`, "success");
+        } catch(err) {
+            semestersData[semIdx] = null;
+            statusDiv.innerText = `❌ 解析失败`;
+            statusDiv.classList.add('error');
+            showMessage(`${SEMESTER_CONFIG[semIdx].gradeLabel} ${SEMESTER_CONFIG[semIdx].semesterLabel}: ${err.message.substring(0, 150)}`, "error");
+            mergeAllSemestersAndRefresh();
+        }
+    }
+
+    function buildUploadUI() {
+        semesterUploadsDiv.innerHTML = '';
+        for(let i=0; i<SEMESTER_CONFIG.length; i++) {
+            const sem = SEMESTER_CONFIG[i];
+            const card = document.createElement('div');
+            card.className = 'semester-card';
+            card.innerHTML = `<label>${sem.gradeLabel} ${sem.semesterLabel}<span class="badge">学期 ${i+1}/6</span></label>
+                              <input type="file" accept=".xlsx, .xls, .csv" data-semester="${i}" class="semester-file" />
+                              <div class="file-status" id="fileStatus_${i}">未上传</div>`;
+            semesterUploadsDiv.appendChild(card);
+        }
+        document.querySelectorAll('.semester-file').forEach(inp => inp.addEventListener('change', handleSemesterFileUpload));
+    }
+
+    async function batchExportAllZip() {
+        if(studentList.length===0) { showMessage("无学生数据","error"); return; }
+        const zip = new JSZip();
+        let toast = document.createElement('div'); toast.className='progress-toast'; toast.innerText=`⏳ 打包中 0/${studentList.length}`; document.body.appendChild(toast);
+        for(let i=0;i<studentList.length;i++) {
+            const stu = studentList[i];
+            const html = generateFullTranscriptHTML(stu);
+            const safe = stu.replace(/[\\/:*?"<>|]/g,'_');
+            zip.file(`${safe}_成绩单.doc`, html);
+            toast.innerText = `📦 打包中 ${i+1}/${studentList.length}`;
+            await new Promise(r=>setTimeout(r,10));
+        }
+        const content = await zip.generateAsync({type:"blob"});
+        saveAs(content, `全班成绩单_${studentList.length}人.zip`);
+        toast.innerText = `✅ 导出完成！共 ${studentList.length} 份`;
+        setTimeout(()=>toast.remove(),3000);
+    }
+
+    // 事件绑定
+    document.getElementById('exportWordBtn').addEventListener('click', () => {
+        if(!currentStudent) { showMessage("请选择学生","error"); return; }
+        const html = generateFullTranscriptHTML(currentStudent);
+        const blob = new Blob([html], {type:"application/msword"});
+        saveAs(blob, `${currentStudent}_成绩单.doc`);
+        showMessage("导出成功","success");
+    });
+    document.getElementById('batchExportZipBtn').addEventListener('click', batchExportAllZip);
+    document.getElementById('printPreviewBtn').addEventListener('click', ()=>window.print());
+    document.getElementById('refreshAllBtn').addEventListener('click', ()=>{ mergeAllSemestersAndRefresh(); showMessage("已刷新","success"); });
+    document.getElementById('resetAllBtn').addEventListener('click', ()=>{
+        semestersData = [null,null,null,null,null,null];
+        for(let i=0;i<6;i++) { let d=document.getElementById(`fileStatus_${i}`); if(d){d.innerText="未上传"; d.classList.remove('error');} let inp=document.querySelector(`.semester-file[data-semester="${i}"]`); if(inp) inp.value=''; }
+        mergedStudentMatrix.clear(); studentList=[]; updateStudentSelect(); previewContainer.innerHTML='<div class="warning">已清空所有数据</div>'; currentStudent=null; showMessage("已重置","info");
+    });
+    document.getElementById('updateStudentInfoBtn').addEventListener('click', ()=>{
+        if(currentStudent) { saveCurrentStudentDetails(); renderPreviewForStudent(currentStudent); showMessage("学生信息已更新","success"); }
+    });
+    studentSelect.addEventListener('change', (e)=>{
+        if(currentStudent) saveCurrentStudentDetails();
+        currentStudent = e.target.value;
+        syncStudentInfoToPanel(currentStudent);
+        renderPreviewForStudent(currentStudent);
+    });
+    function showMessage(msg, type="info") {
+        const msgDiv = document.getElementById('messageBox');
+        const className = type === "error" ? "warning" : (type === "success" ? "success-msg" : "info-bar");
+        msgDiv.innerHTML = `<div class="${className}" style="padding:8px 16px; border-radius:28px;">${msg}</div>`;
+        setTimeout(()=>{ if(msgDiv.firstChild) msgDiv.innerHTML=''; }, 4000);
+    }
+    buildUploadUI();
+    mergeAllSemestersAndRefresh();
+</script>
+</body>
+</html>
