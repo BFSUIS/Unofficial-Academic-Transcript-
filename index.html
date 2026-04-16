@@ -193,13 +193,15 @@
             padding: 4px;
         }
 
-        /* 成绩单完整样式 */
+        /* ========= 成绩单完整样式（符合新字体要求：中文宋体小四，英文Calibri小四；校名及日期五号；课程名称及英文部门不加粗） ========= */
         .full-transcript {
-            font-family: 'Times New Roman', '宋体', SimSun, serif;
+            font-family: 'Calibri', '宋体', SimSun, 'Microsoft YaHei', serif;
+            font-size: 12pt;      /* 小四号 ≈12pt */
             max-width: 1200px;
             margin: 0 auto;
             background: white;
             padding: 20px 24px 32px;
+            line-height: 1.5;
         }
         .full-transcript h1 {
             text-align: center;
@@ -207,24 +209,29 @@
             font-weight: bold;
             margin-bottom: 6px;
             color: #0f172a;
+            font-family: 'Calibri', '宋体', SimSun, 'Microsoft YaHei', serif;
         }
         .full-transcript .eng-title {
             text-align: center;
             font-size: 16px;
             margin-bottom: 24px;
             color: #2c3e66;
+            font-family: 'Calibri', '宋体', SimSun, serif;
+            font-weight: normal;   /* 英文标题不加粗，保持常规 */
         }
         .certify-text {
             margin: 20px 0 24px;
-            font-size: 13px;
+            font-size: 12pt;      /* 小四 */
             line-height: 1.6;
             color: #1e293b;
+            font-family: 'Calibri', '宋体', SimSun, serif;
         }
         .transcript-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 12pt;      /* 小四 */
             margin-bottom: 20px;
+            font-family: 'Calibri', '宋体', SimSun, serif;
         }
         .transcript-table th, .transcript-table td {
             border: 1px solid #000000;
@@ -235,16 +242,19 @@
         .transcript-table th {
             background-color: #eef3fc;
             font-weight: 700;
+            font-size: 12pt;
         }
+        /* 课程名称单元格：不加粗（符合要求） */
         .subject-name {
-            font-weight: 600;
+            font-weight: normal;
             text-align: left;
         }
         .note {
-            font-size: 10px;
+            font-size: 10pt;
             text-align: center;
             color: #475569;
             margin: 12px 0;
+            font-family: 'Calibri', '宋体', SimSun, serif;
         }
         .school-footer {
             margin-top: 28px;
@@ -254,6 +264,25 @@
             justify-content: flex-end;
             text-align: right;
         }
+        /* 校名与日期严格五号字体 + 指定中英文字体，且均不加粗 */
+        .school-footer div:first-child {
+            font-family: '宋体', SimSun, 'Microsoft YaHei', serif;
+            font-size: 10.5pt;    /* 五号 */
+            font-weight: normal;
+            margin-bottom: 4px;
+        }
+        .school-footer div:nth-child(2) {
+            font-family: 'Calibri', sans-serif;
+            font-size: 10.5pt;    /* 五号 */
+            font-weight: normal;
+            margin-bottom: 4px;
+        }
+        .school-footer div:nth-child(3) {
+            font-family: 'Calibri', sans-serif;
+            font-size: 10.5pt;    /* 五号 */
+            font-weight: normal;
+        }
+        
         .warning {
             background: #ffefef;
             color: #b91c1c;
@@ -343,7 +372,7 @@
         <div id="messageBox"></div>
     </div>
 
-    <!-- 成绩单预览卡片（已移除标题） -->
+    <!-- 成绩单预览卡片 -->
     <div class="card" id="previewCard">
         <div id="previewContainer" class="preview-area"></div>
     </div>
@@ -482,7 +511,7 @@
         });
     }
 
-    // 将 MM-DD-YYYY 转为中文年月日，例如 "2009年5月4日"
+    // 将 MM-DD-YYYY 转为中文年月日
     function formatChineseBirthday(dateStr) {
         let mmddyyyy = formatToMMDDYYYY(dateStr);
         let parts = mmddyyyy.split('-');
@@ -513,14 +542,14 @@
         if(parts.length===3) {
             let y,m,d;
             if(parts[0].length===4) { y=parts[0]; m=parts[1]; d=parts[2]; }
-            else if(parts[2].length===4) { y=parts[2]; m=parts[1]; d=parts[0]; }
+            else if(parts[2].length===4) { y=parts[2]; m=parts[0]; d=parts[1]; }
             else { y=parts[2]; m=parts[0]; d=parts[1]; }
             if(y && m && d) return `${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}-${y}`;
         }
         return "01-01-2000";
     }
 
-    // 解析起止字符串，支持 "至今" 或 "今"，返回 { startYearMonth, endYearMonth, isOngoing }
+    // 解析起止字符串
     function parseStartEnd(durationStr) {
         let defaultStart = "09-2022", defaultEnd = "07-2025";
         let isOngoing = false;
@@ -535,12 +564,10 @@
             startPart = str;
             endPart = "";
         }
-        // 判断是否为至今
         if(endPart === "今" || endPart === "至今" || endPart === "now" || endPart === "") {
             isOngoing = true;
             endPart = "";
         }
-        // 验证格式: MM-YYYY
         let startValid = /^\d{1,2}-\d{4}$/.test(startPart);
         let endValid = !endPart || /^\d{1,2}-\d{4}$/.test(endPart);
         if (!startValid) startPart = defaultStart;
@@ -549,7 +576,6 @@
         return { start: startPart, end: endPart, isOngoing: isOngoing };
     }
 
-    // 将 "MM-YYYY" 转为中文 "2024年9月"
     function formatChineseYearMonth(monthYear) {
         let parts = monthYear.split('-');
         let month = parseInt(parts[0], 10);
@@ -557,7 +583,6 @@
         return `${year}年${month}月`;
     }
 
-    // 将 "MM-YYYY" 转为英文 "Sep. 2024"
     function formatEnglishYearMonth(monthYear) {
         let parts = monthYear.split('-');
         let monthNum = parseInt(parts[0], 10);
@@ -567,7 +592,6 @@
         return `${monthAbbr} ${year}`;
     }
 
-    // 格式化英文签发日期 (用于落款)
     function formatEnglishDate(date) {
         const months = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "June", "July", "Aug.", "Sep.", "Oct.", "Nov.", "Dec."];
         const month = months[date.getMonth()];
@@ -576,7 +600,7 @@
         return `${month} ${day}, ${year}`;
     }
 
-    // 生成完整成绩单HTML（包含Word页面视图指令）
+    // 生成完整成绩单HTML（字体规范：中文宋体小四，英文Calibri小四；校名五号且不加粗；课程名称不加粗）
     function generateFullTranscriptHTML(studentName) {
         if(!studentName || !mergedStudentMatrix.has(studentName)) return `<div class="warning">无成绩数据</div>`;
         const subjectScores = mergedStudentMatrix.get(studentName);
@@ -597,9 +621,9 @@
             for(let s=0;s<6;s++) {
                 let val = scoresArr[s];
                 let display = (val !== null && val !== undefined && val !== "") ? val : "—";
-                tableRows += `<td style="border:1px solid #000; text-align:center; padding:8px;">${display}<\/td>`;
+                tableRows += `<td style="border:1px solid #000; text-align:center; padding:8px;">${display}</td>`;
             }
-            tableRows += `<\/tr>`;
+            tableRows += `</tr>`;
         }
         
         const details = studentDetails.get(studentName) || {};
@@ -632,14 +656,11 @@
         
         const footerHtml = `
         <div class="school-footer">
-            <div>
-                <div>北京市朝阳区北外同文外国语学校</div>
-                <div>Beijing Chaoyang Tongwen Foreign Language School</div>
-                <div>Issued: ${englishIssueDate}</div>
-            </div>
+            <div>北京市朝阳区北外同文外国语学校</div>
+            <div>Beijing Chaoyang Tongwen Foreign Language School</div>
+            <div>Issued: ${englishIssueDate}</div>
         </div>`;
         
-        // 添加Word页面视图指令（Print Layout）
         const wordViewInstruction = `<!--[if gte mso 9]>
 <xml>
  <w:WordDocument>
@@ -653,17 +674,28 @@
         <html>
         <head><meta charset="UTF-8">${wordViewInstruction}<title>${chineseName}_成绩单</title>
         <style>
-            body { font-family: 'Times New Roman', '宋体', SimSun, serif; margin: 1.5cm 1.8cm; background: white; }
-            .full-transcript { max-width: 1200px; margin: 0 auto; }
-            h1 { text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 6px; }
-            .eng-title { text-align: center; font-size: 16px; margin-bottom: 24px; }
-            .certify-text { margin: 20px 0 24px; font-size: 13px; line-height: 1.6; color: #1e293b; }
-            .transcript-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+            body { margin: 1.5cm 1.8cm; background: white; }
+            .full-transcript {
+                font-family: 'Calibri', '宋体', SimSun, 'Microsoft YaHei', serif;
+                font-size: 12pt;
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                padding: 0;
+                line-height: 1.5;
+            }
+            .full-transcript h1 { text-align: center; font-size: 22px; font-weight: bold; margin-bottom: 6px; font-family: 'Calibri', '宋体', SimSun, serif; }
+            .full-transcript .eng-title { text-align: center; font-size: 16px; margin-bottom: 24px; font-family: 'Calibri', '宋体', SimSun, serif; font-weight: normal; }
+            .certify-text { margin: 20px 0 24px; font-size: 12pt; line-height: 1.6; font-family: 'Calibri', '宋体', SimSun, serif; }
+            .transcript-table { width: 100%; border-collapse: collapse; font-size: 12pt; margin-bottom: 20px; font-family: 'Calibri', '宋体', SimSun, serif; }
             .transcript-table th, .transcript-table td { border: 1px solid #000000; padding: 8px 6px; vertical-align: middle; text-align: center; }
-            .transcript-table th { background-color: #eef3fc; font-weight: 700; }
-            .subject-name { font-weight: 600; text-align: left; }
-            .note { font-size: 10px; text-align: center; margin: 12px 0; }
+            .transcript-table th { background-color: #eef3fc; font-weight: 700; font-size: 12pt; }
+            .subject-name { font-weight: normal; text-align: left; }
+            .note { font-size: 10pt; text-align: center; color: #475569; margin: 12px 0; font-family: 'Calibri', '宋体', SimSun, serif; }
             .school-footer { margin-top: 28px; border-top: 1px dashed #cbd5e1; padding-top: 18px; display: flex; justify-content: flex-end; text-align: right; }
+            .school-footer div:first-child { font-family: '宋体', SimSun, 'Microsoft YaHei', serif; font-size: 10.5pt; font-weight: normal; margin-bottom: 4px; }
+            .school-footer div:nth-child(2) { font-family: 'Calibri', sans-serif; font-size: 10.5pt; font-weight: normal; margin-bottom: 4px; }
+            .school-footer div:nth-child(3) { font-family: 'Calibri', sans-serif; font-size: 10.5pt; font-weight: normal; }
         </style>
         </head>
         <body>
